@@ -16,6 +16,15 @@ City.destroy_all
 
 puts "Creating European capital cities..."
 
+rome_seed = City.find_or_create_by!(name: "Rome") { |c| c.country_code = "IT" }
+
+User.find_or_create_by!(email: "melissa@urbanmeet.com") do |user|
+  user.name = "Melissa"
+  user.city = rome_seed
+  user.password = "password123"
+  user.password_confirmation = "password123"
+end
+
 # Note: your schema uses cities.name + cities.country_code
 # country_code is ISO 3166-1 alpha-2 (e.g., IT, DE, FR)
 capitals = [
@@ -116,14 +125,9 @@ bio_templates = [
   "Love learning, food spots, and spontaneous plans."
 ]
 
-avatar_pool = [
-  "https://i.pravatar.cc/150?img=3",
-  "https://i.pravatar.cc/150?img=5",
-  "https://i.pravatar.cc/150?img=8",
-  "https://i.pravatar.cc/150?img=12",
-  "https://i.pravatar.cc/150?img=16",
-  "https://i.pravatar.cc/150?img=20"
-]
+avatar_pool = %w[1f431 1f436 1f98a 1f430 1f43c 1f428 1f43b 1f427 1f981 1f42f 1f989 1f438].map do |code|
+  "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/#{code}.png"
+end
 
 def random_birthday(min_age: 18, max_age: 40)
   today = Date.today
@@ -147,7 +151,9 @@ users = []
     avatar_url: avatar_pool.sample,
     language: languages.sample,
     city: city,
-    birthday: random_birthday
+    birthday: random_birthday,
+    password: "password123",
+    password_confirmation: "password123"
   )
 end
 
@@ -159,7 +165,9 @@ melissa = User.create!(
   avatar_url: avatar_pool.first,
   language: "en",
   city: rome,
-  birthday: random_birthday(min_age: 24, max_age: 34)
+  birthday: random_birthday(min_age: 24, max_age: 34),
+  password: "password123",
+  password_confirmation: "password123"
 )
 
 users << melissa

@@ -1,0 +1,244 @@
+<div class="min-h-screen" style="background: var(--um-sand);">
+
+  <!-- PROFILE HERO STRIPE -->
+  <div class="w-full h-56 sm:h-64 lg:h-140 overflow-hidden relative">
+
+    <% profile_hero = @user.city&.name&.downcase == "paris" ? "paris_profile.jpg" : "rome_profile.jpg" %>
+    <%= image_tag profile_hero,
+        class: "w-full h-full object-cover object-[center_50%] brightness-95 contrast-110 saturate-110" %>
+
+    <!-- Soft fade into page -->
+    <div class="absolute inset-0"
+         style="background: linear-gradient(to bottom, rgba(245,241,239,0.0) 70%, var(--um-sand) 100%);">
+    </div>
+
+  </div>
+
+  <div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Header -->
+    <div class="mb-4 text-center">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight" style="color: var(--um-border);">
+          Your NEXUM Profile
+        </h1>
+        <p class="mt-1 text-sm sm:text-base opacity-80" style="color: var(--um-forest);">
+          Your profile, your area, your events — all in one place.
+        </p>
+      </div>
+
+      <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+      </span>
+    </div>
+
+    <!-- Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- LEFT: Profile card -->
+      <div class="lg:col-span-4">
+        <div class="rounded-3xl border shadow-sm"
+             style="background: white; border-color: rgba(209,167,160,.55);">
+          <div class="p-6">
+
+            <!-- Top row -->
+            <div class="flex items-center gap-4">
+              <!-- Avatar -->
+              <% if @user.profile_picture.attached? %>
+                <%= image_tag @user.profile_picture,
+                      class: "h-14 w-14 rounded-full object-cover",
+                      alt: @user.name %>
+              <% elsif @user.avatar_url.present? %>
+                <%= image_tag @user.avatar_url,
+                      class: "h-14 w-14 rounded-full object-cover",
+                      alt: @user.name %>
+              <% else %>
+                <div class="h-14 w-14 rounded-full flex items-center justify-center font-semibold"
+                     style="background: rgba(177,119,141,.15); color: var(--um-primary);">
+                  <%= (@user.name.presence || "U").first.upcase %>
+                </div>
+              <% end %>
+
+              <div class="min-w-0">
+                <div class="text-lg font-semibold truncate" style="color: var(--um-border);">
+                  <%= @user.name %>
+                </div>
+                <div class="text-sm truncate opacity-80" style="color: var(--um-forest);">
+                  <%= @user.email %>
+                </div>
+              </div>
+            </div>
+
+            <div class="my-6 h-px" style="background: rgba(209,167,160,.45);"></div>
+
+            <!-- Details -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm opacity-70" style="color: var(--um-forest);">City</span>
+                <span class="text-sm font-semibold" style="color: var(--um-border);">
+                  <%= @user.city&.name || "—" %>
+                </span>
+              </div>
+
+              <% if @user.birthday.present? %>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-sm opacity-70" style="color: var(--um-forest);">Birthday</span>
+                  <span class="text-sm font-semibold" style="color: var(--um-border);">
+                    <%= @user.birthday.strftime("%B %-d, %Y") %>
+                  </span>
+                </div>
+              <% end %>
+
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm opacity-70" style="color: var(--um-forest);">Status</span>
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                      style="background: rgba(210,224,191,.7); color: var(--um-forest);">
+                  New in Town
+                </span>
+              </div>
+            </div>
+
+            <!-- CTAs -->
+            <div class="mt-10 space-y-3">
+              <a href="#"
+                 class="w-full inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold border transition"
+                 style="border-color: rgba(209,167,160,.65); color: var(--um-border); background: white;">
+                Edit profile
+              </a>
+
+              <%= button_to "Delete profile",
+                    registration_path(:user),
+                    method: :delete,
+                    data: { turbo_confirm: "Are you sure you want to delete your profile? This cannot be undone." },
+                    class: "w-full inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold border transition",
+                    style: "border-color: rgba(209,100,100,.5); color: #c0392b; background: white;" %>
+
+              <p class="pt-2 text-xs opacity-70 text-center" style="color: var(--um-forest);">
+                 • Privacy-first •
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Overview -->
+      <div class="lg:col-span-8 space-y-6">
+
+        <!-- Map card (NOW FIRST) -->
+        <div class="rounded-3xl border shadow-md overflow-hidden"
+             style="background: white; border-color: rgba(209,167,160,.55);">
+          <div class="p-6">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="text-base sm:text-lg font-semibold" style="color: var(--um-border);">
+                Your city
+              </h2>
+              <% if @user.city %>
+                <span class="text-xs font-medium opacity-80" style="color: var(--um-forest);">
+                  <%= @user.city.name %>, <%= @user.city.country_code %>
+                </span>
+              <% end %>
+            </div>
+
+            <% if @user.city %>
+              <div class="mt-4 rounded-2xl overflow-hidden border"
+                   style="height: 260px; border-color: rgba(209,167,160,.45);"
+                   data-controller="profile-map"
+                   data-profile-map-city-value="<%= @user.city.name %>">
+              </div>
+            <% else %>
+              <div class="mt-4 rounded-2xl border flex items-center justify-center text-sm"
+                   style="height: 260px; border-color: rgba(209,167,160,.45); background: rgba(245,241,239,.75); color: var(--um-forest);">
+                No city set — update your profile to see the map.
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Interests card (NOW SECOND) -->
+        <div class="rounded-3xl border shadow-sm"
+             style="background: white; border-color: rgba(209,167,160,.55);">
+          <div class="p-6">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="text-base sm:text-lg font-semibold" style="color: var(--um-border);">
+                Your interests
+              </h2>
+
+              <a href="#"
+                 class="text-sm font-semibold underline underline-offset-4 opacity-80 hover:opacity-100"
+                 style="color: var(--um-primary);">
+                Manage
+              </a>
+            </div>
+
+            <div class="mt-4">
+              <% if @user.respond_to?(:interests) && @user.interests.any? %>
+                <div class="flex flex-wrap gap-2">
+                  <% @user.interests.limit(16).each do |interest| %>
+                    <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                          style="background: rgba(210,224,191,.7); color: var(--um-forest);">
+                      <%= interest.name %>
+                    </span>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="rounded-2xl border p-4"
+                     style="border-color: rgba(209,167,160,.45); background: rgba(245,241,239,.6);">
+                  <p class="text-sm opacity-80" style="color: var(--um-forest);">
+                    Add a few interests to get better event recommendations.
+                  </p>
+                  <div class="mt-3">
+                    <a href="#"
+                       class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white transition"
+                       style="background: var(--um-primary);">
+                      Add interests
+                    </a>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="rounded-3xl border shadow-sm"
+               style="background: white; border-color: rgba(209,167,160,.55);">
+            <div class="p-6">
+              <div class="text-base font-semibold" style="color: var(--um-border);">
+                Find events nearby
+              </div>
+              <p class="mt-1 text-sm opacity-80" style="color: var(--um-forest);">
+                See what’s happening around you.
+              </p>
+              <a href="#"
+                 class="mt-4 inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white transition"
+                 style="background: var(--um-primary);">
+                Browse
+              </a>
+            </div>
+          </div>
+
+          <div class="rounded-3xl border shadow-sm"
+               style="background: white; border-color: rgba(209,167,160,.55);">
+            <div class="p-6">
+              <div class="text-base font-semibold" style="color: var(--um-border);">
+                For you
+              </div>
+              <p class="mt-1 text-sm opacity-80" style="color: var(--um-forest);">
+                Events matched to your interests.
+              </p>
+              <a href="#"
+                 class="mt-4 inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white transition"
+                 style="background: var(--um-forest);">
+                View picks
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

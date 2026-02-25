@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/* Base Typography */
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* UrbanMeet Buttons */
+@layer components {
+
+  /* Login – Grey */
+  .um-btn-login {
+    background: #bfbfbf;
+    color: #ffffff;
+    border: 1px solid #8a8a8a;
+  }
+
+  .um-btn-login:hover {
+    background: #888888;
+  }
+
+  /* Logout – Primary Pink */
+  .um-btn-logout {
+    background: var(--um-primary);
+    color: white;
+    border: 1px solid var(--um-border);
+  }
+
+  .um-btn-logout:hover {
+    background: var(--um-primary-2);
+  }
+
+  /* Get Started – UrbanMeet Text */
+  .um-btn-secondary {
+    background: var(--um-forest-hover);
+    color: white;
+    border: 1px solid var(--um-forest-hover);
+  }
+
+  .um-btn-secondary:hover {
+    background: var(--um-forest-hover);
+    opacity: 0.9;
+  }
+
+  /* Interest selection pills */
+  .interest-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0.85rem;
+    border-radius: 9999px;
+    border: 1.5px solid var(--um-nude);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    background: white;
+    color: #374151;
+    user-select: none;
+  }
+
+  .interest-pill input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .interest-pill:has(input:checked) {
+    background: var(--um-primary-2);
+    color: white;
+    border-color: var(--um-primary-2);
+  }
+
+  .interest-pill:hover:not(:has(input:checked)) {
+    border-color: var(--um-forest);
+    color: var(--um-forest);
+  }
+
+}

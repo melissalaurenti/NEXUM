@@ -13,3 +13,16 @@
  *= require_tree .
  *= require_self
  */
+:root {
+  /* UrbanMeet – Earthy Tones */
+  --um-primary: #b1778d;   /* primary CTA */
+  --um-primary-2: #dfb4c0; /* hover / accent */
+  --um-nude: #D1A7A0;      /* borders / subtle accents */
+  --um-sand: #f5f1ef;      /* background */
+  --um-sage: #D2E0BF;      /* success / tags */
+  --um-forest: #5F7367;
+  --um-forest-hover: #4F6257;
+  --um-light-green: #a1b88f;
+  --um-light-green-hover: #90a381;
+  --um-border: #28292b; /* slate-700 = NEXUM Text */
+}

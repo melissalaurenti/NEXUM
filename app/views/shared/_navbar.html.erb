@@ -1,0 +1,553 @@
+<div data-controller="modal">
+
+  <nav class="flex items-center justify-between px-8 py-5 shadow-sm"
+       style="background: var(--um-sand);">
+
+    <!-- Logo + Brand -->
+    <%= link_to root_path, class: "flex items-center gap-3" do %>
+      <%= image_tag "logo.jpg", alt: "NEXUM Logo", class: "h-12 w-auto" %>
+      <div class="flex flex-col leading-tight">
+        <span class="text-2xl font-semibold tracking-tight text-slate-700">NEXUM</span>
+        <span class="text-xs tracking-widest text-slate-400 uppercase">Log off. Show up.</span>
+      </div>
+    <% end %>
+
+    <!-- Right Side -->
+    <div class="flex items-center gap-4 text-sm">
+
+      <% if user_signed_in? %>
+        <!-- WELCOME MESSAGE -->
+        <span class="text-lg font-semibold tracking-tight" style="color: #5F7367;">
+          Nice to see you, <%= current_user.name.split.first %>!
+        </span>
+
+        <!-- PROFILE PICTURE + DROPDOWN -->
+        <div class="relative" data-controller="dropdown" data-action="click@window->dropdown#close">
+          <button data-action="click->dropdown#toggle" class="focus:outline-none cursor-pointer">
+            <% if current_user.profile_picture.attached? %>
+              <%= image_tag current_user.profile_picture, class: "h-14 w-14 rounded-full object-cover border-2 border-slate-300 hover:border-slate-500 transition" %>
+            <% elsif current_user.avatar_url.present? %>
+              <%= image_tag current_user.avatar_url, class: "h-14 w-14 rounded-full object-cover border-2 border-slate-300 hover:border-slate-500 transition" %>
+            <% else %>
+              <div class="h-14 w-14 rounded-full bg-slate-300 flex items-center justify-center text-slate-600 font-semibold text-base border-2 border-slate-300 hover:border-slate-500 transition">
+                <%= current_user.name&.first&.upcase %>
+              </div>
+            <% end %>
+          </button>
+
+          <!-- DROPDOWN MENU -->
+          <div data-dropdown-target="menu"
+               data-action="click->dropdown#toggle"
+               class="hidden absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
+          <%= link_to profile_path,
+            class: "flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-700 transition hover:[background:var(--um-sand)]" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+              </svg>
+
+              My Profile
+          <% end %>
+
+            <a href="#" class="flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-700 transition hover:[background:var(--um-sand)]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+              </svg>
+              My Events
+            </a>
+            <a href="#" class="flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-700 transition hover:[background:var(--um-sand)]">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+              My Cities
+            </a>
+            <hr class="my-1 border-slate-100">
+            <%= button_to "Logout", destroy_user_session_path, method: :delete,
+                  class: "um-btn-logout w-full text-center px-4 py-2 text-sm rounded-lg transition cursor-pointer border-none" %>
+          </div>
+        </div>
+
+      <% else %>
+        <!-- LOGIN BUTTON -->
+        <a href="#"
+           data-action="click->modal#openLogin:prevent"
+           class="um-btn-login px-4 py-2 rounded-full transition font-medium"
+           style="background: var(--um-sand); color: var(--um-border);">
+          Login
+        </a>
+
+        <!-- GET STARTED -->
+        <a href="#"
+           data-action="click->modal#openGetStarted:prevent"
+           class="um-btn-secondary px-5 py-2 rounded-full transition font-semibold"
+           style="background: var(--um-border); border-color: var(--um-border);">
+          Get Started
+        </a>
+      <% end %>
+
+    </div>
+
+  </nav>
+
+  <div class="h-px w-full" style="background: rgba(209,167,160,.55);"></div>
+
+  <!-- LOGIN MODAL -->
+  <div data-modal-target="loginModal"
+       data-action="click->modal#close"
+       class="hidden fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+
+    <div class="[background:var(--um-sand)] rounded-2xl p-6 w-full max-w-md shadow-lg relative"
+         data-action="click->modal#stopPropagation">
+
+      <!-- CLOSE BUTTON -->
+      <button data-action="click->modal#close"
+              class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl">
+        &times;
+      </button>
+
+      <h2 class="text-xl font-semibold mb-4 text-slate-800">
+        Login
+      </h2>
+
+      <%= form_with url: user_session_path, method: :post, data: { turbo: false } do |f| %>
+        <div class="mb-4">
+          <label class="block text-sm text-slate-600 mb-1">Email</label>
+          <%= f.email_field :email, name: "user[email]",
+                class: "w-full border rounded-lg px-3 py-2" %>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm text-slate-600 mb-1">Password</label>
+          <%= f.password_field :password, name: "user[password]",
+                class: "w-full border rounded-lg px-3 py-2" %>
+        </div>
+
+        <%= f.submit "Sign In",
+              class: "um-btn-secondary w-full py-2 rounded-full font-semibold cursor-pointer" %>
+      <% end %>
+
+      <div class="mt-4 text-center text-base text-slate-500">
+        <a href="#" data-action="click->modal#openForgot:prevent"
+           class="font-semibold hover:underline" style="color: var(--um-primary);">Forgot your password?</a>
+      </div>
+
+      <div class="mt-2 text-center text-base text-slate-500">
+        Don't have an account?
+        <a href="#" data-action="click->modal#openGetStarted:prevent"
+           class="font-bold hover:underline" style="color: var(--um-forest);">Create new account</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD MODAL -->
+  <div data-modal-target="forgotModal"
+       data-action="click->modal#close"
+       class="hidden fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+
+    <div class="[background:var(--um-sand)] rounded-2xl p-6 w-full max-w-md shadow-lg relative"
+         data-action="click->modal#stopPropagation">
+
+      <!-- CLOSE BUTTON -->
+      <button data-action="click->modal#close"
+              class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl">
+        &times;
+      </button>
+
+      <h2 class="text-xl font-semibold mb-2 text-slate-800">
+        Forgot your password?
+      </h2>
+      <p class="text-sm text-slate-500 mb-4">
+        Enter your email and we'll send you a reset link.
+      </p>
+
+      <%= form_with url: user_password_path, method: :post, data: { turbo: false } do |f| %>
+        <div class="mb-6">
+          <label class="block text-sm text-slate-600 mb-1">Email</label>
+          <%= f.email_field :email, name: "user[email]",
+                class: "w-full border rounded-lg px-3 py-2" %>
+        </div>
+
+        <%= f.submit "Send Reset Instructions",
+              class: "um-btn-secondary w-full py-2 rounded-full font-semibold cursor-pointer" %>
+      <% end %>
+
+      <div class="mt-4 text-center text-sm text-slate-500">
+        Remember your password?
+        <a href="#" data-action="click->modal#openLogin:prevent"
+           class="text-slate-600 font-medium hover:underline">Back to login</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GET STARTED MODAL -->
+  <div data-modal-target="getStartedModal"
+       data-action="click->modal#close"
+       class="hidden fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+
+    <div class="[background:var(--um-sand)] rounded-2xl p-6 w-full max-w-md shadow-lg relative"
+         data-action="click->modal#stopPropagation">
+
+      <!-- CLOSE BUTTON -->
+      <button data-action="click->modal#close"
+              class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl">
+        &times;
+      </button>
+
+      <h2 class="text-xl font-semibold mb-1 text-slate-800">Create your account</h2>
+      <p class="text-sm text-slate-500 mb-4">Join NEXUM and start exploring events.</p>
+
+      <%= form_with url: user_registration_path, method: :post, data: { turbo: false } do |f| %>
+        <div class="mb-4">
+          <label class="block text-sm text-slate-600 mb-1">Name</label>
+          <%= f.text_field :name, name: "user[name]",
+                data: { action: "input->modal#checkRegistration", modal_target: "regName" },
+                class: "w-full border rounded-lg px-3 py-2" %>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm text-slate-600 mb-1">Email</label>
+          <%= f.email_field :email, name: "user[email]",
+                data: { action: "input->modal#checkRegistration", modal_target: "regEmail" },
+                class: "w-full border rounded-lg px-3 py-2" %>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm text-slate-600 mb-1">Password</label>
+          <%= f.password_field :password, name: "user[password]",
+                data: { action: "input->modal#checkRegistration", modal_target: "regPassword" },
+                class: "w-full border rounded-lg px-3 py-2" %>
+        </div>
+
+        <div class="mb-2">
+          <label class="block text-sm text-slate-600 mb-1">Confirm Password</label>
+          <%= f.password_field :password_confirmation, name: "user[password_confirmation]",
+                data: { action: "input->modal#checkRegistration", modal_target: "regConfirm" },
+                class: "w-full border rounded-lg px-3 py-2" %>
+        </div>
+
+        <p data-modal-target="passwordError"
+           class="hidden text-xs text-red-500 mb-3">
+          Passwords do not match.
+        </p>
+
+        <button type="button"
+                data-action="click->modal#openInterests"
+                data-modal-target="createAccountBtn"
+                disabled
+                class="um-btn-secondary w-full py-2 rounded-full font-semibold cursor-not-allowed opacity-40 mt-1">
+          Create Account
+        </button>
+      <% end %>
+
+      <div class="mt-4 text-center text-sm text-slate-500">
+        Already have an account?
+        <a href="#" data-action="click->modal#openLogin:prevent"
+           class="font-medium hover:underline" style="color: #5F7367;">Log in</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- INTERESTS MODAL -->
+  <div data-modal-target="interestsModal"
+       data-action="click->modal#close"
+       class="hidden fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+
+    <div class="[background:var(--um-sand)] rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-lg relative"
+         data-action="click->modal#stopPropagation">
+
+      <!-- CLOSE BUTTON -->
+      <button data-action="click->modal#close"
+              class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl">
+        &times;
+      </button>
+
+      <h2 class="text-xl font-semibold mb-1 text-slate-800">What are you into?</h2>
+      <p class="text-sm text-slate-500 mb-4">Pick what excites you — we'll find the right people and events for you.</p>
+
+      <%= form_with url: user_registration_path, method: :post, id: "registration-form", multipart: true, data: { turbo: false } do |f| %>
+        <input type="hidden" name="user[name]"                  data-interests-field="name">
+        <input type="hidden" name="user[email]"                 data-interests-field="email">
+        <input type="hidden" name="user[password]"              data-interests-field="password">
+        <input type="hidden" name="user[password_confirmation]" data-interests-field="password_confirmation">
+        <input type="hidden" name="user[city_id]"               data-modal-target="cityIdField">
+        <input type="hidden" name="user[avatar_url]"            data-modal-target="avatarUrlField">
+        <input type="file"   name="user[profile_picture]"       accept="image/*" class="hidden"
+               data-modal-target="profilePictureInput"
+               data-action="change->modal#previewFile">
+
+        <div class="max-h-[52vh] overflow-y-auto pr-1 space-y-5" data-action="change->modal#checkInterests">
+
+          <!-- Culture & Arts -->
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">🎭 Culture &amp; Arts</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🎭","Theatre Nights"],["🎻","Opera & Classical"],["🖼️","Exhibitions & Galleries"],
+                  ["🏛️","Museums"],["🌿","Open-Air Shows"],["😂","Comedy Nights"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>">
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Events & Nightlife -->
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">🎶 Events &amp; Nightlife</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🪩","Clubbing"],["🏖️","Beach-Bar"],["🎪","Festival Vibes"],["🌃","Open-Air & Rooftop"],
+                  ["🎸","Live Music"],["🎤","Karaoke Night"],["🍸","Cocktail Bars"],["⚽","Sport Bar Nights"],
+                  ["🎧","DJ Sets"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>">
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Food & Drinks -->
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">🥂 Food &amp; Drinks</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🥂","Aperitivo Evenings"],["👨‍🍳","Cooking Classes"],["🍹","Cocktail Workshop"],
+                  ["🍷","Wine Tasting"],["☕","Coffee Hangouts"],["🥘","Food Markets"],["🥐","Brunch"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>">
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Creative & Hobbies -->
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">🎨 Creative &amp; Hobbies</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🖌️","Painting Session"],["✂️","DIY & Crafts"],["🏺","Pottery / Ceramics"],
+                  ["📸","Photography Walks"],["🔮","Creative Workshops"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>">
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Learning & Career -->
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">💼 Learning &amp; Career</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["📚","Professional Learning"],["🎓","Workshops & Masterclasses"],["🤝","Skill Sharing"],
+                  ["👔","Career Networking"],["💻","Coworking Meetups"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>">
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- New in Town Support -->
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">🗺️ New in Town Support</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🏠","New in Town"],["📦","Relocation Support"],["📋","Local Bureaucracy Help"],
+                  ["🗺️","City Tips & Settling In"],["👫","Buddy Meetups"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>">
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Pets & Outdoors -->
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">🐕 Pets &amp; Outdoors</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🐕","Dog Walks"],["🐾","Pet Lovers"],["🌿","Park Walks"],["🌊","Beach Walks"],
+                  ["🥾","Hiking"],["🏃","Running Club"],["☀️","Beach Day Trip"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>">
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- City Life -->
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">🛍️ City Life</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🛍️","Shopping Walks"],["🕶️","Vintage & Thrift Hunt"],["🏪","Markets & Flea Markets"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>">
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Language & Social -->
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">💬 Language &amp; Social</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["💬","Language Exchange"],["🌍","International Meetups"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>">
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mt-5 flex gap-3">
+          <button type="button"
+                  data-action="click->modal#openCity"
+                  data-modal-target="nextStepBtn"
+                  disabled
+                  class="um-btn-secondary flex-1 py-2 rounded-full font-semibold text-sm cursor-not-allowed opacity-40">
+            Get Started →
+          </button>
+        </div>
+      <% end %>
+
+    </div>
+  </div>
+
+  <!-- AVATAR MODAL -->
+  <div data-modal-target="avatarModal"
+       data-action="click->modal#close"
+       class="hidden fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+
+    <div class="[background:var(--um-sand)] rounded-2xl p-6 w-full max-w-lg mx-4 shadow-lg relative"
+         data-action="click->modal#stopPropagation">
+
+      <!-- CLOSE BUTTON -->
+      <button data-action="click->modal#close"
+              class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl">
+        &times;
+      </button>
+
+      <h2 class="text-xl font-semibold mb-1 text-slate-800">Add your profile photo</h2>
+      <p class="text-sm text-slate-500 mb-5">Help others recognise you — upload a photo or pick an avatar.</p>
+
+      <!-- Upload area -->
+      <div data-action="click->modal#triggerFileUpload"
+           data-modal-target="uploadArea"
+           class="border-2 border-dashed border-slate-300 rounded-xl p-5 text-center cursor-pointer hover:border-slate-400 transition mb-5">
+        <img data-modal-target="uploadPreview"
+             class="hidden mx-auto h-24 w-24 rounded-full object-cover mb-2">
+        <div data-modal-target="uploadPlaceholder">
+          <div class="text-3xl mb-1">📷</div>
+          <p class="text-slate-600 text-sm font-medium">Click to upload your photo</p>
+          <p class="text-xs text-slate-400 mt-0.5">JPG, PNG or WEBP</p>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-3 mb-4">
+        <hr class="flex-1 border-slate-200">
+        <span class="text-xs text-slate-400 font-semibold tracking-wide">OR CHOOSE AN AVATAR</span>
+        <hr class="flex-1 border-slate-200">
+      </div>
+
+      <!-- Avatar grid -->
+      <div class="grid grid-cols-6 gap-2 mb-6">
+        <% [
+          ["1f431", "Cat"],   ["1f436", "Dog"],   ["1f98a", "Fox"],
+          ["1f430", "Rabbit"],["1f43c", "Panda"],  ["1f428", "Koala"],
+          ["1f43b", "Bear"],  ["1f427", "Penguin"],["1f981", "Lion"],
+          ["1f42f", "Tiger"], ["1f989", "Owl"],    ["1f438", "Frog"]
+        ].each do |code, name| %>
+          <button type="button"
+                  data-action="click->modal#selectAvatar"
+                  data-modal-target="avatarOption"
+                  data-avatar-url="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/<%= code %>.png"
+                  title="<%= name %>"
+                  style="background: var(--um-sand);"
+                  class="rounded-full overflow-hidden border-2 border-transparent hover:opacity-80 transition focus:outline-none">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/<%= code %>.png"
+                 alt="<%= name %>"
+                 class="h-12 w-12 object-contain p-1" loading="lazy">
+          </button>
+        <% end %>
+      </div>
+
+      <button type="button"
+              data-action="click->modal#submitRegistration"
+              data-modal-target="joinBtn"
+              disabled
+              class="um-btn-secondary w-full py-3 rounded-full font-semibold cursor-not-allowed opacity-40 mb-3">
+        Join NEXUM →
+      </button>
+
+    </div>
+  </div>
+
+  <!-- CITY MODAL -->
+  <div data-modal-target="cityModal"
+       data-action="click->modal#close"
+       class="hidden fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+
+    <div class="[background:var(--um-sand)] rounded-2xl overflow-hidden w-full max-w-2xl mx-4 shadow-lg relative"
+         data-action="click->modal#stopPropagation"
+         data-controller="city-map">
+
+      <!-- CLOSE BUTTON -->
+      <button data-action="click->modal#close"
+              class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl z-10">
+        &times;
+      </button>
+
+      <div class="p-6 pb-3 relative z-[1000]">
+        <h2 class="text-xl font-semibold text-slate-800">Where are you based?</h2>
+        <p class="text-sm text-slate-500 mt-1">Type your city or click on the map.</p>
+        <div class="relative mt-3">
+          <input type="text"
+                 data-city-map-target="searchInput"
+                 data-action="input->city-map#search"
+                 placeholder="Search for a city..."
+                 autocomplete="off"
+                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black bg-white">
+          <div data-city-map-target="suggestions"
+               class="hidden absolute z-[1000] w-full bg-white border border-gray-200 rounded-lg mt-1 shadow-lg max-h-48 overflow-y-auto">
+          </div>
+        </div>
+      </div>
+
+      <div data-city-map-target="map" class="w-full" style="height: 340px;"></div>
+
+      <!-- City selected footer — shown after a city is picked -->
+      <div data-city-map-target="cityFooter"
+           class="hidden border-t border-slate-200 px-5 py-3 flex items-center justify-between gap-4">
+        <div class="min-w-0">
+          <p class="text-xs text-slate-500 mb-0.5">Selected city</p>
+          <p class="font-semibold text-slate-800 truncate" data-city-map-target="cityName"></p>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <button type="button"
+                  data-action="click->city-map#backToMap"
+                  class="text-sm text-slate-400 hover:text-slate-600 transition underline whitespace-nowrap">
+            Change city
+          </button>
+          <button type="button"
+                  data-action="click->modal#openAvatar"
+                  data-modal-target="joinBtn"
+                  disabled
+                  class="um-btn-secondary px-6 py-2 rounded-full font-semibold text-sm cursor-not-allowed opacity-40 whitespace-nowrap">
+            Continue →
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
