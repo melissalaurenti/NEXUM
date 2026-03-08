@@ -1,8 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Connects to data-controller="city-search"
 export default class extends Controller {
   static targets = ["input", "dropdown"]
+  static values = { navigateTo: String }
+
+  #selectedCityId = null
 
   search() {
     const q = this.inputTarget.value.trim()
@@ -44,12 +46,13 @@ export default class extends Controller {
 
     this.inputTarget.value = cityName
     this.dropdownTarget.classList.add("hidden")
+    this.#selectedCityId = cityId
 
-    // Set city_id in the registration form hidden field
+    if (this.hasNavigateToValue && this.navigateToValue) return
+
     const hiddenField = document.querySelector('[name="user[city_id]"]')
     if (hiddenField) hiddenField.value = cityId
 
-    // Enable the Join button
     const joinBtn = document.querySelector('[data-modal-target="joinBtn"]')
     if (joinBtn) {
       joinBtn.disabled = false
@@ -58,7 +61,14 @@ export default class extends Controller {
     }
   }
 
+  navigate() {
+    if (!this.#selectedCityId) return
+    window.location.href = `${this.navigateToValue}?city_id=${this.#selectedCityId}`
+  }
+
   #clearSelection() {
+    this.#selectedCityId = null
+
     const hiddenField = document.querySelector('[name="user[city_id]"]')
     if (hiddenField) hiddenField.value = ""
 

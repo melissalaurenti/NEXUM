@@ -47,7 +47,6 @@ const CITY_COORDS = {
   "Tirana":           [41.3275, 19.8187]
 }
 
-// Connects to data-controller="profile-map"
 export default class extends Controller {
   static values = { city: String }
 

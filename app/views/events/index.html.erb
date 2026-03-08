@@ -1,0 +1,170 @@
+<div class="px-8 md:px-20 lg:px-32 py-12" data-controller="event-modal">
+
+  <% if @city %>
+    <!-- Header -->
+    <div class="mb-10">
+      <p class="text-sm font-semibold tracking-wide text-gray-500 uppercase">Events</p>
+      <h1 class="mt-2 text-4xl font-bold tracking-tight text-gray-900"><%= @city.name %></h1>
+      <p class="mt-2 text-gray-500">
+        <%= @events.size == 1 ? "1 upcoming event" : "#{@events.size} upcoming events" %>
+      </p>
+    </div>
+
+    <% if @events.any? %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% @events.each do |event| %>
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer"
+               data-action="click->event-modal#open"
+               data-event-title="<%= event.title %>"
+               data-event-date="<%= event.starts_at.strftime("%a, %b %-d · %H:%M") %>"
+               data-event-ends="<%= event.ends_at&.strftime("%H:%M") %>"
+               data-event-address="<%= event.address %>"
+               data-event-description="<%= event.description %>"
+               data-event-attendees="<%= event.attendances.size %>"
+               data-event-capacity="<%= event.capacity %>"
+               data-event-host="<%= event.host.name %>"
+               data-event-city="<%= @city.name %>"
+               data-event-tags="<%= event.interests.map(&:name).to_json %>"
+               data-event-image="<%= event_image_url(event) %>">
+
+            <!-- Event image -->
+            <div class="h-44 overflow-hidden bg-gray-100">
+              <img src="<%= event_image_url(event) %>"
+                   alt="<%= event.title %>"
+                   class="w-full h-full object-cover">
+            </div>
+
+            <!-- Card body -->
+            <div class="p-6 flex flex-col gap-4 flex-1">
+              <!-- Title + Date -->
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                  <%= event.starts_at.strftime("%a, %b %-d · %H:%M") %>
+                </p>
+                <h2 class="mt-1 text-lg font-semibold text-gray-900 leading-snug">
+                  <%= event.title %>
+                </h2>
+              </div>
+
+              <!-- Address -->
+              <p class="text-sm text-gray-500 flex items-start gap-1">
+                <span class="mt-0.5">📍</span>
+                <%= event.address %>
+              </p>
+
+              <!-- Interest tags -->
+              <% if event.interests.any? %>
+                <div class="flex flex-wrap gap-2">
+                  <% event.interests.first(3).each do |interest| %>
+                    <span class="text-xs bg-gray-100 text-gray-600 rounded-full px-3 py-1">
+                      <%= interest.name %>
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <!-- Footer: attendees + capacity -->
+              <div class="mt-auto flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
+                <span>
+                  <%= event.attendances.size %> / <%= event.capacity %> going
+                </span>
+                <span class="text-xs text-gray-400">
+                  hosted by <%= event.host.name.split.first %>
+                </span>
+              </div>
+            </div>
+
+          </div>
+        <% end %>
+      </div>
+
+    <% else %>
+      <div class="text-center py-24 text-gray-400">
+        <p class="text-5xl mb-4">🗺️</p>
+        <p class="text-xl font-semibold text-gray-600">No upcoming events in <%= @city.name %></p>
+        <p class="mt-2 text-sm">Check back soon — things are brewing.</p>
+      </div>
+    <% end %>
+
+  <% else %>
+    <!-- No city selected -->
+    <div class="text-center py-24 text-gray-400">
+      <p class="text-5xl mb-4">🏙️</p>
+      <p class="text-xl font-semibold text-gray-600">Pick a city to explore events</p>
+      <p class="mt-2 text-sm">Head back and search for your city.</p>
+      <a href="/" class="mt-6 inline-block bg-black text-white px-6 py-3 rounded-full text-sm hover:bg-gray-800 transition">
+        Back to home
+      </a>
+    </div>
+  <% end %>
+
+  <!-- Event detail modal -->
+  <div data-event-modal-target="modal"
+       class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+       data-action="click->event-modal#close">
+
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+         data-action="click->event-modal#stopPropagation">
+
+      <!-- Modal image -->
+      <div class="h-56 overflow-hidden rounded-t-2xl bg-gray-100">
+        <img data-event-modal-target="image"
+             src=""
+             alt=""
+             class="w-full h-full object-cover">
+      </div>
+
+      <!-- Modal content -->
+      <div class="p-8 flex flex-col gap-5">
+
+        <!-- Title -->
+        <h2 class="text-2xl font-bold text-gray-900" data-event-modal-target="title"></h2>
+
+        <!-- Two-column layout: info left, map right -->
+        <div class="flex flex-col md:flex-row gap-6">
+
+          <!-- Left: event details -->
+          <div class="flex flex-col gap-4 flex-1">
+
+            <!-- Date -->
+            <p class="text-sm font-semibold text-gray-500 flex items-center gap-2">
+              <span>🗓️</span>
+              <span data-event-modal-target="date"></span>
+            </p>
+
+            <!-- Address -->
+            <p class="text-sm text-gray-500 flex items-start gap-2">
+              <span>📍</span>
+              <span data-event-modal-target="address"></span>
+            </p>
+
+            <!-- Description -->
+            <p class="text-sm text-gray-700 leading-relaxed" data-event-modal-target="description"></p>
+
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-2" data-event-modal-target="tags"></div>
+
+          </div>
+
+          <!-- Right: map -->
+          <div data-event-modal-target="map" class="h-56 md:h-auto md:min-h-[14rem] md:w-64 lg:w-72 shrink-0 rounded-xl overflow-hidden border border-gray-100"></div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-100">
+          <span data-event-modal-target="spots"></span>
+          <span data-event-modal-target="host" class="text-xs text-gray-400"></span>
+        </div>
+
+        <!-- Close button -->
+        <button data-action="click->event-modal#close"
+                class="w-full bg-black text-white rounded-full py-3 text-sm font-semibold hover:bg-gray-800 transition">
+          Close
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+</div>

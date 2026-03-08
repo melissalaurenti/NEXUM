@@ -1,16 +1,15 @@
 @import "tailwindcss";
 
-/* Base Typography */
 @layer base {
   body {
     font-family: 'Inter', sans-serif;
   }
 }
 
-/* UrbanMeet Buttons */
+/* NEXUM Button */
 @layer components {
 
-  /* Login – Grey */
+  /* Login */
   .um-btn-login {
     background: #bfbfbf;
     color: #ffffff;
@@ -21,7 +20,7 @@
     background: #888888;
   }
 
-  /* Logout – Primary Pink */
+  /* Logout  */
   .um-btn-logout {
     background: var(--um-primary);
     color: white;
@@ -32,7 +31,7 @@
     background: var(--um-primary-2);
   }
 
-  /* Get Started – UrbanMeet Text */
+  /* Get Started */
   .um-btn-secondary {
     background: var(--um-forest-hover);
     color: white;
@@ -44,7 +43,7 @@
     opacity: 0.9;
   }
 
-  /* Interest selection pills */
+  /* Interest selection */
   .interest-pill {
     display: inline-flex;
     align-items: center;

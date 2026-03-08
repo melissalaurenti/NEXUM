@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Connects to data-controller="modal"
 export default class extends Controller {
   static targets = [
     "loginModal", "forgotModal", "getStartedModal", "interestsModal", "cityModal", "avatarModal",
@@ -53,7 +52,6 @@ export default class extends Controller {
     const file = this.profilePictureInputTarget.files[0]
     if (!file) return
 
-    // Clear any preset avatar selection
     this.avatarUrlFieldTarget.value = ""
     this.avatarOptionTargets.forEach(btn => btn.style.borderColor = "transparent")
 
@@ -71,15 +69,12 @@ export default class extends Controller {
     const btn = event.currentTarget
     const url = btn.dataset.avatarUrl
 
-    // Set the hidden avatar_url field in the registration form
     this.avatarUrlFieldTarget.value = url
 
-    // Clear any file upload
     this.profilePictureInputTarget.value = ""
     this.uploadPreviewTarget.classList.add("hidden")
     this.uploadPlaceholderTarget.classList.remove("hidden")
 
-    // Highlight selected, reset others
     this.avatarOptionTargets.forEach(b => b.style.borderColor = "transparent")
     btn.style.borderColor = "#5F7367"
     this._updateJoinBtn()
@@ -110,7 +105,6 @@ export default class extends Controller {
     const passwordsMatch = password === confirm
     const allFilled = name.length > 0 && email.length > 0 && password.length > 0 && confirm.length > 0
 
-    // Show/hide mismatch error only when confirm has something typed
     if (confirm.length > 0 && !passwordsMatch) {
       this.passwordErrorTarget.classList.remove("hidden")
     } else {
@@ -134,7 +128,6 @@ export default class extends Controller {
     const gsModal = this.getStartedModalTarget
     const intModal = this.interestsModalTarget
 
-    // Copy registration form values into the interests modal hidden fields
     intModal.querySelector('[data-interests-field="name"]').value =
       gsModal.querySelector('[name="user[name]"]').value
     intModal.querySelector('[data-interests-field="email"]').value =
@@ -156,7 +149,6 @@ export default class extends Controller {
     this.interestsModalTarget.classList.add("hidden")
     this.cityModalTarget.classList.remove("hidden")
 
-    // Leaflet can't measure the container while it's hidden, so invalidate after it's visible
     setTimeout(() => {
       const cityMapEl = this.cityModalTarget.querySelector('[data-controller="city-map"]')
       if (cityMapEl) {

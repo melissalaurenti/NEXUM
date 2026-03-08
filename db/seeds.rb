@@ -76,7 +76,6 @@ capitals = [
 
 cities = capitals.map { |name, code| City.create!(name: name, country_code: code) }
 
-# Handy lookup for some well-known capitals
 rome   = City.find_by!(name: "Rome")
 berlin = City.find_by!(name: "Berlin")
 paris  = City.find_by!(name: "Paris")
@@ -157,7 +156,7 @@ users = []
   )
 end
 
-# Optional: pin "Melissa" to Rome for nicer demo
+# Melissa Demo User
 melissa = User.create!(
   email: "melissa.laurenti@urbanmeet.test",
   name: "Melissa Laurenti",
@@ -180,7 +179,6 @@ end
 
 puts "Creating events (interest-driven)..."
 
-# Event title templates per interest
 event_templates = {
   "Tech & Startups" => [
     "Startup Aperitivo",
@@ -323,40 +321,92 @@ end
 
 events = []
 
-# Create ~60 events across Europe, each tied to 1–3 interests
-60.times do
-  city = cities.sample
-  host = users.select { |u| u.city_id == city.id }.sample || users.sample
+puts "Creating pinned highlight events..."
 
-  main_interest = interests.sample
-  title = (event_templates[main_interest.name] || ["Community Meetup"]).sample
-  title = "#{title} — #{city.name}"
+madrid = City.find_by!(name: "Madrid")
+tirana = City.find_by!(name: "Tirana")
 
-  starts_at = rand(1..21).days.from_now.change(hour: [10, 11, 17, 18, 19].sample, min: [0, 15, 30, 45].sample)
-  ends_at = starts_at + [90, 120, 150].sample.minutes
+highlight_events_data = [
+  {
+    city: tirana,
+    title: "Sunset Rooftop Meetup — Tirana",
+    description: "Join us on one of Tirana's best rooftop spots for sunset views, good music, and new faces. A relaxed evening for expats, locals, and curious travellers.",
+    address: "Blloku District, Tirana",
+    interest_names: ["Networking", "Food & Wine"],
+    starts_at: 1.day.from_now.change(hour: 18, min: 30)
+  },
+  {
+    city: rome,
+    title: "Evening Walk & Aperitivo — Rome",
+    description: "A relaxed walk through Rome's historic centre — past the Pantheon, Piazza Navona, and Campo de' Fiori — followed by a group aperitivo. Perfect for newcomers and regulars alike.",
+    address: "Piazza Navona, Rome",
+    interest_names: ["Sightseeing", "Food & Wine"],
+    starts_at: 2.days.from_now.change(hour: 17, min: 0)
+  },
+  {
+    city: madrid,
+    title: "Spanish / English Exchange — Madrid",
+    description: "Practice your Spanish or help others with their English in a fun, informal setting. We meet at a cosy café in Malasaña — all levels welcome, just bring good energy!",
+    address: "Calle del Pez 21, Madrid",
+    interest_names: ["Language Exchange", "Networking"],
+    starts_at: 3.days.from_now.change(hour: 19, min: 0)
+  }
+]
 
-  event = Event.create!(
-    city: city,
-    host: host,
-    title: title,
-    description: "A friendly meetup in #{city.name}. Come as you are — meet new people and enjoy the vibe.",
-    address: random_address(city.name),
-    capacity: [10, 12, 15, 20, 25].sample,
+highlight_events_data.each do |data|
+  ev = Event.create!(
+    city: data[:city],
+    host: melissa,
+    title: data[:title],
+    description: data[:description],
+    address: data[:address],
+    capacity: 20,
     status: "published",
-    starts_at: starts_at,
-    ends_at: ends_at
+    starts_at: data[:starts_at],
+    ends_at: data[:starts_at] + 120.minutes
   )
+  ev.interests << interests.select { |i| data[:interest_names].include?(i.name) }
+  events << ev
+end
 
-  # Add 1–3 interests to the event
-  event.interests << ([main_interest] + interests.sample(rand(0..2))).uniq
+all_cities = City.all.to_a
 
-  events << event
+all_cities.each do |city|
+  host_pool = users.select { |u| u.city_id == city.id }
+  host_pool = users if host_pool.empty?
+
+  # Pick 4 random interest categories for this city
+  selected_interests = interests.sample(4)
+
+  selected_interests.each do |main_interest|
+    host = host_pool.sample
+    title = (event_templates[main_interest.name] || ["Community Meetup"]).sample
+    title = "#{title} — #{city.name}"
+
+    starts_at = rand(1..21).days.from_now.change(hour: [10, 11, 17, 18, 19].sample, min: [0, 15, 30, 45].sample)
+    ends_at = starts_at + [90, 120, 150].sample.minutes
+
+    event = Event.create!(
+      city: city,
+      host: host,
+      title: title,
+      description: "A friendly meetup in #{city.name}. Come as you are — meet new people and enjoy the vibe.",
+      address: random_address(city.name),
+      capacity: [10, 12, 15, 20, 25].sample,
+      status: "published",
+      starts_at: starts_at,
+      ends_at: ends_at
+    )
+
+    event.interests << ([main_interest] + interests.sample(rand(0..2))).uniq
+
+    events << event
+  end
 end
 
 puts "Creating attendances..."
 
 events.each do |event|
-  # Attendees: prefer same city, exclude host
   pool = users.select { |u| u.city_id == event.city_id && u.id != event.host_id }
   pool = users.reject { |u| u.id == event.host_id } if pool.size < 6
 

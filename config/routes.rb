@@ -4,6 +4,7 @@ Rails.application.routes.draw do
 
   get "cities/search", to: "cities#search"
   get "cities", to: "cities#index"
+  resources :events, only: [:index]
   get "profile", to: "profiles#show"
 
   get "pages/home"

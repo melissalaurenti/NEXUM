@@ -22,19 +22,27 @@
         Meet new people. Find real events. Feel at home.
       </p>
 
-      <div class="mt-8 space-y-4">
-        <input type="text"
-          placeholder="Where are you?"
-          class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black">
+      <div class="mt-8 space-y-4"
+           data-controller="city-search"
+           data-city-search-navigate-to-value="/events">
+        <p class="text-lg font-semibold text-gray-800">
+          Where are you?
+        </p>
 
-        <input type="date"
-          class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black">
+        <div class="relative">
+          <input type="text"
+            data-city-search-target="input"
+            data-action="input->city-search#search"
+            placeholder="e.g. Rome, Berlin, Barcelona"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black bg-transparent">
 
-        <input type="text"
-          placeholder="What are you into?"
-          class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black">
+          <ul data-city-search-target="dropdown"
+              class="hidden absolute z-10 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 overflow-hidden">
+          </ul>
+        </div>
 
-        <button class="w-full bg-black text-white py-3 rounded-full hover:bg-gray-800 transition">
+        <button data-action="click->city-search#navigate"
+                class="w-full bg-black text-white py-3 rounded-full hover:bg-gray-800 transition">
           Find Events
         </button>
       </div>

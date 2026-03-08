@@ -1,18 +1,15 @@
-<section class="pb-24" style="background: var(--um-sand);">
+<section class="pb-24" style="background: var(--um-sand);" data-controller="event-modal">
   <div class="w-full px-8 md:px-20 lg:px-32">
 
     <!-- Header -->
     <div class="flex items-end justify-between">
       <div class="w-full">
-
         <p class="text-sm font-semibold tracking-wide text-gray-500 uppercase">
           Highlights
         </p>
-
         <h2 class="mt-2 text-3xl font-semibold tracking-tight text-gray-900">
-          What’s happening right now
+          What's happening right now
         </h2>
-
         <p class="mt-3 text-gray-600 max-w-xl">
           Curated events with good vibes — join in or save for later.
         </p>
@@ -22,51 +19,169 @@
     <!-- Cards -->
     <div class="mt-12 grid gap-8 md:grid-cols-3">
 
-      <% events = [
-        { title: "Creative Meetup & Brunch", badge: "NEW", badge_style: "bg-rose-200 text-rose-900", spots: 5, image: "highlight-creative.jpg" },
-        { title: "Urban Yoga", badge: "Fully booked", badge_style: "bg-gray-200 text-gray-900", spots: 10, image: "highlight-yoga.jpg" },
-        { title: "Afterwork Drinks", badge: nil, badge_style: "", spots: 6, image: "highlight-drinks.jpg" }
-      ] %>
+      <% if @highlights.any? %>
+        <% @highlights.each do |event| %>
+          <article class="group bg-white rounded-3xl shadow-sm ring-1 ring-black/5 overflow-hidden hover:shadow-lg transition duration-300 cursor-pointer"
+                   data-action="click->event-modal#open"
+                   data-event-title="<%= event.title %>"
+                   data-event-date="<%= event.starts_at.strftime("%A, %b %-d · %H:%M") %>"
+                   data-event-ends="<%= event.ends_at&.strftime("%H:%M") %>"
+                   data-event-address="<%= event.address %>"
+                   data-event-description="<%= event.description %>"
+                   data-event-attendees="<%= event.attendances.size %>"
+                   data-event-capacity="<%= event.capacity %>"
+                   data-event-host="<%= event.host.name.split.first %>"
+                   data-event-city="<%= event.city.name %>"
+                   data-event-tags="<%= event.interests.first(5).map(&:name).to_json %>"
+                   data-event-image="<%= event_image_url(event) %>">
 
-      <% events.each do |e| %>
-        <article class="group bg-white rounded-3xl shadow-sm ring-1 ring-black/5 overflow-hidden hover:shadow-lg transition duration-300">
-
-          <!-- Image -->
-          <div class="relative">
-            <%= image_tag e[:image],
-                  class: "h-48 w-full object-cover group-hover:scale-[1.02] transition duration-300",
-                  alt: e[:title] %>
-
-            <% if e[:badge].present? %>
-              <div class="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold <%= e[:badge_style] %>">
-                <%= e[:badge] %>
+            <!-- Event image -->
+            <div class="relative h-48 w-full overflow-hidden bg-gray-100">
+              <img src="<%= event_image_url(event) %>"
+                   alt="<%= event.title %>"
+                   class="w-full h-full object-cover">
+              <div class="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold bg-rose-200 text-rose-900">
+                <%= event.city.name %>
               </div>
-            <% end %>
-          </div>
-
-          <!-- Content -->
-          <div class="p-6">
-            <div class="flex items-start justify-between gap-4">
-
-              <h3 class="text-lg font-semibold tracking-tight text-gray-900 leading-snug">
-                <%= e[:title] %>
-              </h3>
-
-              <div class="shrink-0 w-10 h-10 rounded-full bg-zinc-900 text-white text-sm font-semibold flex items-center justify-center shadow">
-                <%= e[:spots] %>
-              </div>
-
             </div>
 
-            <a href="#" class="mt-6 inline-block text-sm font-medium text-gray-600 hover:text-gray-900">
-              View details
-            </a>
-          </div>
+            <!-- Content -->
+            <div class="p-6">
+              <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    <%= event.starts_at.strftime("%a, %b %-d · %H:%M") %>
+                  </p>
+                  <h3 class="mt-1 text-lg font-semibold tracking-tight text-gray-900 leading-snug">
+                    <%= event.title %>
+                  </h3>
+                </div>
+                <div class="shrink-0 w-10 h-10 rounded-full bg-zinc-900 text-white text-sm font-semibold flex items-center justify-center shadow">
+                  <%= event.capacity - event.attendances.size %>
+                </div>
+              </div>
 
-        </article>
+              <p class="mt-3 text-sm text-gray-500 flex items-start gap-1">
+                <span class="mt-0.5">📍</span>
+                <%= event.address %>
+              </p>
+
+              <% if event.interests.any? %>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <% event.interests.first(2).each do |interest| %>
+                    <span class="text-xs bg-gray-100 text-gray-600 rounded-full px-3 py-1">
+                      <%= interest.name %>
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <span class="mt-5 inline-block text-sm font-medium text-gray-600 group-hover:text-gray-900 transition">
+                View details →
+              </span>
+            </div>
+
+          </article>
+        <% end %>
+
+      <% else %>
+        <!-- Fallback static cards when no events in DB -->
+        <% [
+          { title: "Creative Meetup & Brunch", city: "Rome", spots: 5 },
+          { title: "Urban Yoga", city: "Berlin", spots: 10 },
+          { title: "Afterwork Drinks", city: "Paris", spots: 6 }
+        ].each do |e| %>
+          <article class="group bg-white rounded-3xl shadow-sm ring-1 ring-black/5 overflow-hidden hover:shadow-lg transition duration-300">
+            <div class="relative h-48 w-full overflow-hidden bg-gray-100">
+              <img src="<%= EventsHelper::DEFAULT_EVENT_IMAGE %>"
+                   alt="<%= e[:title] %>"
+                   class="w-full h-full object-cover">
+              <div class="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold bg-rose-200 text-rose-900">
+                <%= e[:city] %>
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="flex items-start justify-between gap-4">
+                <h3 class="text-lg font-semibold tracking-tight text-gray-900 leading-snug"><%= e[:title] %></h3>
+                <div class="shrink-0 w-10 h-10 rounded-full bg-zinc-900 text-white text-sm font-semibold flex items-center justify-center shadow">
+                  <%= e[:spots] %>
+                </div>
+              </div>
+              <span class="mt-6 inline-block text-sm font-medium text-gray-600">Coming soon</span>
+            </div>
+          </article>
+        <% end %>
       <% end %>
 
     </div>
-
   </div>
+
+  <!-- Event Detail Modal -->
+  <div data-event-modal-target="modal"
+       class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+       data-action="click->event-modal#close">
+
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+         data-action="click->event-modal#stopPropagation">
+
+      <!-- Modal image -->
+      <div class="h-56 overflow-hidden rounded-t-2xl bg-gray-100">
+        <img data-event-modal-target="image"
+             src="" alt=""
+             class="w-full h-full object-cover">
+      </div>
+
+      <!-- Modal content -->
+      <div class="p-8 flex flex-col gap-5">
+
+        <!-- Title -->
+        <h2 class="text-2xl font-bold text-gray-900" data-event-modal-target="title"></h2>
+
+        <!-- Two-column layout: info left, map right -->
+        <div class="flex flex-col md:flex-row gap-6">
+
+          <!-- Left: event details -->
+          <div class="flex flex-col gap-4 flex-1">
+
+            <!-- Date -->
+            <p class="text-sm font-semibold text-gray-500 flex items-center gap-2">
+              <span>🗓️</span>
+              <span data-event-modal-target="date"></span>
+            </p>
+
+            <!-- Address -->
+            <p class="text-sm text-gray-500 flex items-start gap-2">
+              <span>📍</span>
+              <span data-event-modal-target="address"></span>
+            </p>
+
+            <!-- Description -->
+            <p class="text-sm text-gray-700 leading-relaxed" data-event-modal-target="description"></p>
+
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-2" data-event-modal-target="tags"></div>
+
+          </div>
+
+          <!-- Right: map -->
+          <div data-event-modal-target="map" class="h-56 md:h-auto md:min-h-[14rem] md:w-64 lg:w-72 shrink-0 rounded-xl overflow-hidden border border-gray-100"></div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-100">
+          <span data-event-modal-target="spots"></span>
+          <span data-event-modal-target="host" class="text-xs text-gray-400"></span>
+        </div>
+
+        <!-- Close button -->
+        <button data-action="click->event-modal#close"
+                class="w-full bg-black text-white rounded-full py-3 text-sm font-semibold hover:bg-gray-800 transition">
+          Close
+        </button>
+
+      </div>
+    </div>
+  </div>
+
 </section>
