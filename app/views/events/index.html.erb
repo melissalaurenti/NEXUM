@@ -1,4 +1,4 @@
-<div class="px-8 md:px-20 lg:px-32 py-12" data-controller="event-modal">
+<div class="px-8 md:px-20 lg:px-32 py-12" data-controller="event-modal" data-event-modal-signed-in-value="<%= user_signed_in? %>">
 
   <% if @city %>
     <!-- Header -->
@@ -25,7 +25,8 @@
                data-event-host="<%= event.host.name %>"
                data-event-city="<%= @city.name %>"
                data-event-tags="<%= event.interests.map(&:name).to_json %>"
-               data-event-image="<%= event_image_url(event) %>">
+               data-event-image="<%= event_image_url(event) %>"
+               data-event-id="<%= event.id %>">
 
             <!-- Event image -->
             <div class="h-44 overflow-hidden bg-gray-100">
@@ -98,12 +99,58 @@
     </div>
   <% end %>
 
+  <!-- Login required modal -->
+  <div data-event-modal-target="loginModal"
+       class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
+       data-action="click->event-modal#closeLogin">
+
+    <div class="[background:var(--um-sand)] rounded-2xl shadow-lg w-full max-w-md relative p-6"
+         data-action="click->event-modal#stopPropagation">
+
+      <!-- Close X -->
+      <button data-action="click->event-modal#closeLogin"
+              class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl">
+        &times;
+      </button>
+
+      <h2 class="text-xl font-semibold mb-4 text-slate-800">Login</h2>
+
+      <%= form_with url: user_session_path, method: :post, data: { turbo: false } do |f| %>
+        <div class="mb-4">
+          <label class="block text-sm text-slate-600 mb-1">Email</label>
+          <%= f.email_field :email, name: "user[email]", autofocus: true, autocomplete: "email",
+              class: "w-full border rounded-lg px-3 py-2" %>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm text-slate-600 mb-1">Password</label>
+          <%= f.password_field :password, name: "user[password]", autocomplete: "current-password",
+              class: "w-full border rounded-lg px-3 py-2" %>
+        </div>
+
+        <%= f.submit "Sign In", class: "um-btn-secondary w-full py-2 rounded-full font-semibold cursor-pointer" %>
+      <% end %>
+
+      <div class="mt-4 text-center text-base text-slate-500">
+        <%= link_to "Forgot your password?", new_user_password_path,
+              class: "font-semibold hover:underline", style: "color: var(--um-primary);" %>
+      </div>
+
+      <div class="mt-2 text-center text-base text-slate-500">
+        Don't have an account?
+        <%= link_to "Create new account", new_user_registration_path,
+              class: "font-bold hover:underline", style: "color: var(--um-forest);" %>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Event detail modal -->
   <div data-event-modal-target="modal"
        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
        data-action="click->event-modal#close">
 
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative"
          data-action="click->event-modal#stopPropagation">
 
       <!-- Modal image -->
@@ -157,11 +204,17 @@
           <span data-event-modal-target="host" class="text-xs text-gray-400"></span>
         </div>
 
-        <!-- Close button -->
-        <button data-action="click->event-modal#close"
-                class="w-full bg-black text-white rounded-full py-3 text-sm font-semibold hover:bg-gray-800 transition">
-          Close
-        </button>
+        <!-- Action buttons -->
+        <div class="flex gap-3">
+          <button data-action="click->event-modal#joinNow"
+                  class="flex-1 bg-black text-white rounded-full py-3 text-sm font-semibold hover:bg-gray-800 transition">
+            Join Now
+          </button>
+          <button data-action="click->event-modal#saveForLater"
+                  class="flex-1 border border-gray-300 text-gray-700 rounded-full py-3 text-sm font-semibold hover:bg-gray-50 transition">
+            Save for Later
+          </button>
+        </div>
 
       </div>
     </div>

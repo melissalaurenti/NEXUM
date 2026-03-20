@@ -1,4 +1,4 @@
-<div class="min-h-screen" style="background: var(--um-sand);">
+<div class="min-h-screen" style="background: var(--um-sand);" data-controller="profile-edit">
 
   <!-- PROFILE HERO STRIPE -->
   <div class="w-full h-56 sm:h-64 lg:h-140 overflow-hidden relative">
@@ -68,6 +68,13 @@
               </div>
             </div>
 
+            <% if @user.bio.present? %>
+              <div class="my-4 h-px" style="background: rgba(209,167,160,.45);"></div>
+              <p class="text-sm font-semibold leading-relaxed" style="color: var(--um-border);">
+                <%= @user.bio %>
+              </p>
+            <% end %>
+
             <div class="my-6 h-px" style="background: rgba(209,167,160,.45);"></div>
 
             <!-- Details -->
@@ -88,31 +95,48 @@
                 </div>
               <% end %>
 
+              <% if @user.languages.present? && @user.languages.any? %>
+                  <div class="flex items-start justify-between gap-3">
+                  <span class="text-sm opacity-70 shrink-0" style="color: var(--um-forest);">Languages</span>
+                  <div class="flex flex-wrap gap-1 justify-end">
+                    <% @user.languages.first(10).each do |lang| %>
+                      <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                            style="background: rgba(177,119,141,.12); color: var(--um-primary);">
+                        <%= lang %>
+                      </span>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+
               <div class="flex items-center justify-between gap-3">
                 <span class="text-sm opacity-70" style="color: var(--um-forest);">Status</span>
                 <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
                       style="background: rgba(210,224,191,.7); color: var(--um-forest);">
-                  New in Town
+                  <%= @user.community_status %>
                 </span>
               </div>
             </div>
 
             <!-- CTAs -->
-            <div class="mt-10 space-y-3">
-              <a href="#"
-                 class="w-full inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold border transition"
-                 style="border-color: rgba(209,167,160,.65); color: var(--um-border); background: white;">
-                Edit profile
-              </a>
+            <div class="mt-10 space-y-2">
+              <div class="flex gap-2">
+                <button type="button"
+                   data-action="click->profile-edit#open"
+                   class="flex-1 inline-flex items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold border transition cursor-pointer"
+                   style="border-color: rgba(209,167,160,.65); color: var(--um-border); background: white;">
+                  Edit profile
+                </button>
 
-              <%= button_to "Delete profile",
-                    registration_path(:user),
-                    method: :delete,
-                    data: { turbo_confirm: "Are you sure you want to delete your profile? This cannot be undone." },
-                    class: "w-full inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold border transition",
-                    style: "border-color: rgba(209,100,100,.5); color: #c0392b; background: white;" %>
+                <%= button_to "Delete profile",
+                      registration_path(:user),
+                      method: :delete,
+                      data: { turbo_confirm: "Are you sure you want to delete your profile? This cannot be undone." },
+                      class: "flex-1 inline-flex items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold border transition",
+                      style: "border-color: rgba(209,100,100,.5); color: #c0392b; background: white;" %>
+              </div>
 
-              <p class="pt-2 text-xs opacity-70 text-center" style="color: var(--um-forest);">
+              <p class="text-xs opacity-70 text-center" style="color: var(--um-forest);">
                  • Privacy-first •
               </p>
             </div>
@@ -141,7 +165,7 @@
 
             <% if @user.city %>
               <div class="mt-4 rounded-2xl overflow-hidden border"
-                   style="height: 260px; border-color: rgba(209,167,160,.45);"
+                   style="height: 260px; border-color: rgba(209,167,160,.45); position: relative; z-index: 0; isolation: isolate;"
                    data-controller="profile-map"
                    data-profile-map-city-value="<%= @user.city.name %>">
               </div>
@@ -163,11 +187,12 @@
                 Your interests
               </h2>
 
-              <a href="#"
-                 class="text-sm font-semibold underline underline-offset-4 opacity-80 hover:opacity-100"
-                 style="color: var(--um-primary);">
+              <button type="button"
+                      data-action="click->profile-edit#openInterests"
+                      class="text-sm font-semibold underline underline-offset-4 opacity-80 hover:opacity-100 cursor-pointer"
+                      style="color: var(--um-primary); background: none; border: none; padding: 0;">
                 Manage
-              </a>
+              </button>
             </div>
 
             <div class="mt-4">
@@ -179,20 +204,6 @@
                       <%= interest.name %>
                     </span>
                   <% end %>
-                </div>
-              <% else %>
-                <div class="rounded-2xl border p-4"
-                     style="border-color: rgba(209,167,160,.45); background: rgba(245,241,239,.6);">
-                  <p class="text-sm opacity-80" style="color: var(--um-forest);">
-                    Add a few interests to get better event recommendations.
-                  </p>
-                  <div class="mt-3">
-                    <a href="#"
-                       class="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white transition"
-                       style="background: var(--um-primary);">
-                      Add interests
-                    </a>
-                  </div>
                 </div>
               <% end %>
             </div>
@@ -241,4 +252,317 @@
     </div>
 
   </div>
+
+  <!-- Interests Modal -->
+  <div data-profile-edit-target="interestsModal"
+       data-action="click->profile-edit#closeInterests"
+       class="hidden fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+
+    <div class="rounded-2xl p-6 w-full max-w-2xl mx-4 shadow-lg relative"
+         style="background: var(--um-sand);"
+         data-action="click->profile-edit#stopPropagation">
+
+      <button type="button"
+              data-action="click->profile-edit#closeInterests"
+              class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl cursor-pointer">
+        &times;
+      </button>
+
+      <h2 class="text-xl font-semibold mb-1" style="color: var(--um-border);">What are you into?</h2>
+      <p class="text-sm mb-4 opacity-70" style="color: var(--um-forest);">Pick what excites you — we'll find the right people and events for you.</p>
+
+      <%= form_with url: profile_interests_path, method: :patch, data: { turbo: false } do |f| %>
+
+        <div class="max-h-[52vh] overflow-y-auto pr-1 space-y-5">
+
+          <% user_interest_names = @user.interests.pluck(:name) %>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide mb-2 opacity-60" style="color: var(--um-forest);">🎭 Culture &amp; Arts</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🎭","Theatre Nights"],["🎻","Opera & Classical"],["🖼️","Exhibitions & Galleries"],
+                  ["🏛️","Museums"],["🌿","Open-Air Shows"],["😂","Comedy Nights"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>" <%= "checked" if user_interest_names.include?(name) %>>
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide mb-2 opacity-60" style="color: var(--um-forest);">🎶 Events &amp; Nightlife</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🪩","Clubbing"],["🏖️","Beach-Bar"],["🎪","Festival Vibes"],["🌃","Open-Air & Rooftop"],
+                  ["🎸","Live Music"],["🎤","Karaoke Night"],["🍸","Cocktail Bars"],["⚽","Sport Bar Nights"],
+                  ["🎧","DJ Sets"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>" <%= "checked" if user_interest_names.include?(name) %>>
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide mb-2 opacity-60" style="color: var(--um-forest);">🥂 Food &amp; Drinks</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🥂","Aperitivo Evenings"],["👨‍🍳","Cooking Classes"],["🍹","Cocktail Workshop"],
+                  ["🍷","Wine Tasting"],["☕","Coffee Hangouts"],["🥘","Food Markets"],["🥐","Brunch"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>" <%= "checked" if user_interest_names.include?(name) %>>
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide mb-2 opacity-60" style="color: var(--um-forest);">🎨 Creative &amp; Hobbies</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🖌️","Painting Session"],["✂️","DIY & Crafts"],["🏺","Pottery / Ceramics"],
+                  ["📸","Photography Walks"],["🔮","Creative Workshops"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>" <%= "checked" if user_interest_names.include?(name) %>>
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide mb-2 opacity-60" style="color: var(--um-forest);">💼 Learning &amp; Career</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["📚","Professional Learning"],["🎓","Workshops & Masterclasses"],["🤝","Skill Sharing"],
+                  ["👔","Career Networking"],["💻","Coworking Meetups"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>" <%= "checked" if user_interest_names.include?(name) %>>
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide mb-2 opacity-60" style="color: var(--um-forest);">🗺️ New in Town Support</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🏠","New in Town"],["📦","Relocation Support"],["📋","Local Bureaucracy Help"],
+                  ["🗺️","City Tips & Settling In"],["👫","Buddy Meetups"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>" <%= "checked" if user_interest_names.include?(name) %>>
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide mb-2 opacity-60" style="color: var(--um-forest);">🐕 Pets &amp; Outdoors</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🐕","Dog Walks"],["🐾","Pet Lovers"],["🌿","Park Walks"],["🌊","Beach Walks"],
+                  ["🥾","Hiking"],["🏃","Running Club"],["☀️","Beach Day Trip"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>" <%= "checked" if user_interest_names.include?(name) %>>
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide mb-2 opacity-60" style="color: var(--um-forest);">🛍️ City Life</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["🛍️","Shopping Walks"],["🕶️","Vintage & Thrift Hunt"],["🏪","Markets & Flea Markets"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>" <%= "checked" if user_interest_names.include?(name) %>>
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide mb-2 opacity-60" style="color: var(--um-forest);">💬 Language &amp; Social</p>
+            <div class="flex flex-wrap gap-2">
+              <% [["💬","Language Exchange"],["🌍","International Meetups"]].each do |emoji, name| %>
+                <label class="interest-pill">
+                  <input type="checkbox" name="interest_names[]" value="<%= name %>" <%= "checked" if user_interest_names.include?(name) %>>
+                  <%= emoji %> <%= name %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mt-5 flex gap-3">
+          <%= f.submit "Save interests",
+                class: "flex-1 py-2 rounded-full text-sm font-semibold text-white cursor-pointer transition",
+                style: "background: var(--um-border);" %>
+          <button type="button"
+                  data-action="click->profile-edit#closeInterests"
+                  class="flex-1 py-2 rounded-full text-sm font-semibold border transition cursor-pointer"
+                  style="border-color: rgba(209,167,160,.65); color: var(--um-border); background: white;">
+            Cancel
+          </button>
+        </div>
+
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div data-profile-edit-target="modal"
+       data-action="click->profile-edit#close"
+       class="hidden fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+
+    <div class="rounded-2xl p-6 w-full max-w-lg mx-4 shadow-lg relative overflow-y-auto max-h-[90vh]"
+         style="background: var(--um-sand);"
+         data-action="click->profile-edit#stopPropagation">
+
+      <button type="button"
+              data-action="click->profile-edit#close"
+              class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl cursor-pointer">
+        &times;
+      </button>
+
+      <h2 class="text-xl font-semibold mb-1" style="color: var(--um-border);">Edit profile</h2>
+      <p class="text-sm mb-5 opacity-70" style="color: var(--um-forest);">Update your personal details below.</p>
+
+      <%= form_with model: @user, url: profile_path, method: :patch, multipart: true, data: { turbo: false } do |f| %>
+
+        <!-- Profile picture -->
+        <div class="mb-5 flex items-center gap-4">
+          <% if @user.profile_picture.attached? %>
+            <%= image_tag @user.profile_picture, class: "h-16 w-16 rounded-full object-cover border-2", style: "border-color: rgba(209,167,160,.65);" %>
+          <% elsif @user.avatar_url.present? %>
+            <%= image_tag @user.avatar_url, class: "h-16 w-16 rounded-full object-cover border-2", style: "border-color: rgba(209,167,160,.65);" %>
+          <% else %>
+            <div class="h-16 w-16 rounded-full flex items-center justify-center text-xl font-semibold"
+                 style="background: rgba(177,119,141,.15); color: var(--um-primary);">
+              <%= (@user.name.presence || "U").first.upcase %>
+            </div>
+          <% end %>
+          <div>
+            <label class="block text-xs font-medium mb-1" style="color: var(--um-forest);">Profile picture</label>
+            <%= f.file_field :profile_picture, accept: "image/*",
+                  class: "text-sm text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:cursor-pointer",
+                  style: "file-selector-button-background: var(--um-sand);" %>
+          </div>
+        </div>
+
+        <div class="h-px mb-5" style="background: rgba(209,167,160,.45);"></div>
+
+        <!-- Name -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1" style="color: var(--um-forest);">Name</label>
+          <%= f.text_field :name, value: @user.name,
+                class: "w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2",
+                style: "border-color: rgba(209,167,160,.65); background: white;",
+                placeholder: "Your name" %>
+        </div>
+
+        <!-- Bio -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1" style="color: var(--um-forest);">Bio</label>
+          <%= f.text_area :bio, rows: 3,
+                class: "w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none",
+                style: "border-color: rgba(209,167,160,.65); background: white;",
+                placeholder: "Tell others a little about yourself…",
+                value: @user.bio %>
+        </div>
+
+        <!-- Birthday -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1" style="color: var(--um-forest);">Birthday</label>
+          <%= f.date_field :birthday, value: @user.birthday,
+                class: "w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2",
+                style: "border-color: rgba(209,167,160,.65); background: white;" %>
+        </div>
+
+        <!-- Languages -->
+        <% user_languages = @user.languages || [] %>
+        <% all_languages = [
+          ["🇬🇧","English"], ["🇫🇷","French"], ["🇩🇪","German"], ["🇪🇸","Spanish"],
+          ["🇮🇹","Italian"], ["🇵🇹","Portuguese"], ["🇷🇺","Russian"], ["🇨🇳","Chinese (Mandarin)"],
+          ["🇯🇵","Japanese"], ["🇰🇷","Korean"], ["🇦🇪","Arabic"], ["🇳🇱","Dutch"],
+          ["🇸🇪","Swedish"], ["🇵🇱","Polish"], ["🇹🇷","Turkish"], ["🇬🇷","Greek"],
+          ["🇮🇳","Hindi"], ["🇧🇷","Portuguese (BR)"], ["🇺🇦","Ukrainian"], ["🇷🇴","Romanian"],
+          ["🇨🇿","Czech"], ["🇭🇺","Hungarian"], ["🇮🇱","Hebrew"], ["🇹🇭","Thai"],
+          ["🇻🇳","Vietnamese"], ["🇮🇩","Indonesian"]
+        ] %>
+        <div class="mb-6" data-controller="languages-select">
+          <label class="block text-sm font-medium mb-1" style="color: var(--um-forest);">
+            Languages
+            <span class="font-normal opacity-60 text-xs ml-1">(up to 10)</span>
+          </label>
+
+          <!-- Dropdown trigger -->
+          <div class="relative">
+            <button type="button"
+                    data-action="click->languages-select#toggleDropdown"
+                    class="w-full flex items-center justify-between border rounded-xl px-3 py-2 text-sm cursor-pointer"
+                    style="border-color: rgba(209,167,160,.65); background: white; color: var(--um-forest);">
+              <span>Select a language…</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+
+            <!-- Dropdown list -->
+            <div data-languages-select-target="dropdown"
+                 class="hidden absolute z-20 w-full mt-1 rounded-xl border shadow-lg overflow-y-auto max-h-52"
+                 style="background: white; border-color: rgba(209,167,160,.65);">
+              <% all_languages.each do |flag, lang| %>
+                <button type="button"
+                        data-action="click->languages-select#pick"
+                        data-languages-select-lang-param="<%= lang %>"
+                        data-languages-select-flag-param="<%= flag %>"
+                        class="w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:opacity-80"
+                        style="color: var(--um-border);">
+                  <span><%= flag %> <%= lang %></span>
+                </button>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Selected pills -->
+          <div class="flex flex-wrap gap-2 mt-2" data-languages-select-target="pills"></div>
+
+          <!-- Counter -->
+          <p class="mt-1 text-xs opacity-50" data-languages-select-target="counter" style="color: var(--um-forest);">
+            <%= [user_languages.length, 10].min %>/10 selected
+          </p>
+
+          <!-- Pre-selected hidden inputs + flag map for JS -->
+          <div data-languages-select-target="inputs">
+            <% all_languages.each do |flag, lang| %>
+              <% if user_languages.include?(lang) %>
+                <input type="hidden" name="user[languages][]" value="<%= lang %>"
+                       data-flag="<%= flag %>" data-lang="<%= lang %>">
+              <% end %>
+            <% end %>
+            <!-- flag map used by controller -->
+            <script type="application/json" data-languages-select-target="flagMap">
+              <%= all_languages.map { |f, l| [l, f] }.to_h.to_json.html_safe %>
+            </script>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <%= f.submit "Save changes",
+                class: "flex-1 py-2 rounded-full text-sm font-semibold text-white cursor-pointer transition",
+                style: "background: var(--um-border);" %>
+          <button type="button"
+                  data-action="click->profile-edit#close"
+                  class="flex-1 py-2 rounded-full text-sm font-semibold border transition cursor-pointer"
+                  style="border-color: rgba(209,167,160,.65); color: var(--um-border); background: white;">
+            Cancel
+          </button>
+        </div>
+
+      <% end %>
+    </div>
+  </div>
+
 </div>

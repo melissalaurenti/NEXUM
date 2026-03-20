@@ -23,12 +23,37 @@ const CITY_COORDS = {
 }
 
 export default class extends Controller {
-  static targets = ["modal", "title", "date", "address", "description", "spots", "host", "tags", "map", "image"]
+  static targets = ["modal", "loginModal", "title", "date", "address", "description", "spots", "host", "tags", "map", "image"]
+  static values  = { signedIn: Boolean }
+
+  connect() {
+    const pending = sessionStorage.getItem("nexum_pending_event")
+    if (pending) {
+      sessionStorage.removeItem("nexum_pending_event")
+      try {
+        const d = JSON.parse(pending)
+        this._currentEventData = { ...d }
+        this._currentEventId = d.eventId
+        this._populateModal(d)
+        this.modalTarget.classList.remove("hidden")
+        document.body.classList.add("overflow-hidden")
+        this._initMap(d.eventAddress, d.eventCity)
+      } catch (_) {}
+    }
+  }
 
   open(event) {
     const card = event.currentTarget
     const d = card.dataset
+    this._currentEventData = { ...d }
+    this._currentEventId = d.eventId
+    this._populateModal(d)
+    this.modalTarget.classList.remove("hidden")
+    document.body.classList.add("overflow-hidden")
+    this._initMap(d.eventAddress, d.eventCity)
+  }
 
+  _populateModal(d) {
     this.titleTarget.textContent = d.eventTitle
     this.dateTarget.textContent = d.eventDate + (d.eventEnds ? ` – ${d.eventEnds}` : "")
     this.addressTarget.textContent = d.eventAddress
@@ -43,11 +68,6 @@ export default class extends Controller {
     this.tagsTarget.innerHTML = tags.map(t =>
       `<span class="text-xs bg-gray-100 text-gray-600 rounded-full px-3 py-1">${t}</span>`
     ).join("")
-
-    this.modalTarget.classList.remove("hidden")
-    document.body.classList.add("overflow-hidden")
-
-    this._initMap(d.eventAddress, d.eventCity)
   }
 
   close() {
@@ -57,6 +77,78 @@ export default class extends Controller {
       this._map.remove()
       this._map = null
     }
+  }
+
+  async joinNow(event) {
+    event.stopPropagation()
+    if (!this.signedInValue) { this._openLogin(); return }
+    const btn = event.currentTarget
+    await this._postAttendance("attending", btn, "Going!", "Join Now")
+  }
+
+  async saveForLater(event) {
+    event.stopPropagation()
+    if (!this.signedInValue) { this._openLogin(); return }
+    const btn = event.currentTarget
+    await this._postAttendance("saved", btn, "Saved!", "Save for Later")
+  }
+
+  async _postAttendance(status, btn, successLabel, resetLabel) {
+    if (!this._currentEventId) return
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content
+
+    btn.disabled = true
+    btn.textContent = "..."
+
+    try {
+      const res = await fetch("/attendances", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrf,
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ event_id: this._currentEventId, status })
+      })
+
+      if (res.ok) {
+        btn.textContent = successLabel
+        setTimeout(() => {
+          btn.disabled = false
+          btn.textContent = resetLabel
+        }, 2000)
+      } else {
+        btn.disabled = false
+        btn.textContent = resetLabel
+      }
+    } catch (_) {
+      btn.disabled = false
+      btn.textContent = resetLabel
+    }
+  }
+
+  _openLogin() {
+    // Save current event data so we can reopen the modal after login redirect
+    sessionStorage.setItem("nexum_pending_event", JSON.stringify(this._currentEventData))
+
+    // Set the return URL on the login form so Devise redirects back here
+    const form = this.loginModalTarget.querySelector("form")
+    let input = form.querySelector("input[name='return_to']")
+    if (!input) {
+      input = document.createElement("input")
+      input.type = "hidden"
+      input.name = "return_to"
+      form.appendChild(input)
+    }
+    input.value = window.location.href
+
+    // Show login modal on top — event modal stays visible behind it
+    this.loginModalTarget.classList.remove("hidden")
+  }
+
+  closeLogin() {
+    this.loginModalTarget.classList.add("hidden")
+    // Event modal remains open underneath — do not remove overflow-hidden
   }
 
   stopPropagation(event) {

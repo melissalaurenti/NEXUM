@@ -1,0 +1,137 @@
+<div class="px-8 md:px-20 lg:px-32 py-12"
+     data-controller="my-events"
+     data-my-events-dates-value="<%= @calendar_dates.to_json %>">
+
+  <!-- Page Header -->
+  <div class="mb-10">
+    <p class="text-sm font-semibold tracking-wide text-gray-500 uppercase">Your Journey</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-gray-900">My Events</h1>
+    <p class="mt-2 text-gray-500">All your events in one place.</p>
+  </div>
+
+  <!-- Overview + Calendar row -->
+  <div class="flex flex-col lg:flex-row gap-8 mb-12">
+
+    <!-- Stats overview -->
+    <div class="flex gap-4 flex-wrap lg:flex-col lg:w-56 shrink-0">
+      <div class="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
+        <p class="text-3xl font-bold text-gray-900"><%= @upcoming.size %></p>
+        <p class="text-sm text-gray-500 mt-1">Upcoming</p>
+      </div>
+      <div class="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
+        <p class="text-3xl font-bold text-gray-900"><%= @saved.size %></p>
+        <p class="text-sm text-gray-500 mt-1">Saved for Later</p>
+      </div>
+      <div class="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
+        <p class="text-3xl font-bold text-gray-900"><%= @past.size %></p>
+        <p class="text-sm text-gray-500 mt-1">Past Events</p>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex-1 max-w-sm">
+      <div class="flex items-center justify-between mb-5">
+        <button data-action="click->my-events#prevMonth"
+                class="p-2 hover:bg-gray-100 rounded-lg transition text-gray-600 font-medium text-lg leading-none">
+          &#8592;
+        </button>
+        <h2 class="text-base font-semibold text-gray-900" data-my-events-target="monthLabel"></h2>
+        <button data-action="click->my-events#nextMonth"
+                class="p-2 hover:bg-gray-100 rounded-lg transition text-gray-600 font-medium text-lg leading-none">
+          &#8594;
+        </button>
+      </div>
+
+      <!-- Day headers -->
+      <div class="grid grid-cols-7 text-center text-xs font-semibold text-gray-400 mb-2">
+        <div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div><div>Su</div>
+      </div>
+
+      <!-- Day grid -->
+      <div class="grid grid-cols-7 gap-y-1" data-my-events-target="calendarGrid"></div>
+
+      <!-- Legend -->
+      <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
+        <span class="h-2 w-2 rounded-full inline-block" style="background: var(--um-primary);"></span>
+        Event day
+      </div>
+    </div>
+
+    <!-- Roma Event Image -->
+    <div class="hidden lg:flex items-center justify-center flex-1">
+      <%= image_tag "Rome-Event_2.jpeg", class: "rounded-2xl shadow-sm object-cover object-[center_85%] h-full max-h-[400px] w-full", alt: "Roma Events" %>
+    </div>
+
+  </div>
+
+  <!-- Upcoming Events -->
+  <section class="mb-12">
+    <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+      <span>Upcoming</span>
+      <% if @upcoming.any? %>
+        <span class="text-sm font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full"><%= @upcoming.size %></span>
+      <% end %>
+    </h2>
+    <% if @upcoming.any? %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% @upcoming.each do |attendance| %>
+          <%= render "my_events/event_card", attendance: attendance %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-14 border border-dashed border-gray-200 rounded-2xl">
+        <p class="text-3xl mb-3">🗓️</p>
+        <p class="text-gray-600 font-medium">No upcoming events</p>
+        <p class="text-sm text-gray-400 mt-1">Browse events in your city and click "Join Now".</p>
+        <%= link_to "Explore Events", events_path, class: "mt-4 inline-block bg-black text-white px-5 py-2 rounded-full text-sm hover:bg-gray-800 transition" %>
+      </div>
+    <% end %>
+  </section>
+
+  <!-- Saved for Later -->
+  <section class="mb-12">
+    <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+      <span>Saved for Later</span>
+      <% if @saved.any? %>
+        <span class="text-sm font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full"><%= @saved.size %></span>
+      <% end %>
+    </h2>
+    <% if @saved.any? %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% @saved.each do |attendance| %>
+          <%= render "my_events/event_card", attendance: attendance, saved: true %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-14 border border-dashed border-gray-200 rounded-2xl">
+        <p class="text-3xl mb-3">🔖</p>
+        <p class="text-gray-600 font-medium">Nothing saved yet</p>
+        <p class="text-sm text-gray-400 mt-1">Hit "Save for Later" on any event to bookmark it here.</p>
+      </div>
+    <% end %>
+  </section>
+
+  <!-- Past Events -->
+  <section class="mb-8">
+    <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+      <span>Past Events</span>
+      <% if @past.any? %>
+        <span class="text-sm font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full"><%= @past.size %></span>
+      <% end %>
+    </h2>
+    <% if @past.any? %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% @past.each do |attendance| %>
+          <%= render "my_events/event_card", attendance: attendance, past: true %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-14 border border-dashed border-gray-200 rounded-2xl">
+        <p class="text-3xl mb-3">📖</p>
+        <p class="text-gray-600 font-medium">No past events yet</p>
+        <p class="text-sm text-gray-400 mt-1">Your event history will appear here.</p>
+      </div>
+    <% end %>
+  </section>
+
+</div>

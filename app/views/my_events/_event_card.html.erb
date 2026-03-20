@@ -1,0 +1,49 @@
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+  <!-- Image -->
+  <div class="h-40 overflow-hidden bg-gray-100 relative">
+    <img src="<%= event_image_url(attendance.event) %>"
+         alt="<%= attendance.event.title %>"
+         class="w-full h-full object-cover <%= local_assigns[:past] ? 'opacity-60 grayscale' : '' %>">
+    <% if local_assigns[:past] %>
+      <span class="absolute top-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full font-medium">Past</span>
+    <% elsif local_assigns[:saved] %>
+      <span class="absolute top-3 left-3 text-xs px-2 py-1 rounded-full font-medium" style="background: var(--um-sand); color: var(--um-border);">Saved</span>
+    <% else %>
+      <span class="absolute top-3 left-3 bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">Going</span>
+    <% end %>
+  </div>
+
+  <!-- Body -->
+  <div class="p-5 flex flex-col gap-3 flex-1">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <%= attendance.event.starts_at.strftime("%a, %b %-d · %H:%M") %>
+      </p>
+      <h3 class="mt-1 text-base font-semibold text-gray-900 leading-snug">
+        <%= attendance.event.title %>
+      </h3>
+    </div>
+
+    <p class="text-sm text-gray-500 flex items-start gap-1">
+      <span class="mt-0.5">📍</span>
+      <%= attendance.event.address %>
+    </p>
+
+    <% if attendance.event.interests.any? %>
+      <div class="flex flex-wrap gap-1">
+        <% attendance.event.interests.first(3).each do |interest| %>
+          <span class="text-xs bg-gray-100 text-gray-600 rounded-full px-2 py-0.5"><%= interest.name %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <!-- Remove button -->
+    <div class="mt-auto pt-3 border-t border-gray-100">
+      <button class="text-xs text-gray-400 hover:text-red-500 transition"
+              data-attendance-id="<%= attendance.id %>"
+              data-action="click->my-events#removeAttendance">
+        Remove
+      </button>
+    </div>
+  </div>
+</div>

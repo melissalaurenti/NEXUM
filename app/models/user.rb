@@ -12,4 +12,8 @@ class User < ApplicationRecord
   has_many :chats, through: :chat_memberships
   has_many :messages, dependent: :destroy
   has_one_attached :profile_picture
+
+  def community_status
+    created_at < 6.months.ago ? "Local" : "New in Town"
+  end
 end
