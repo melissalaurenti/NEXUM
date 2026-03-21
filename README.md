@@ -34,10 +34,6 @@ Platform Preview
   <img src="./app/assets/profile.jpg" width="45%" />
 </p>
 
-<p align="center">
-  <img src="./app/assets/events.jpg" width="80%" />
-</p>
-
 ---
 
 AI-ASSISTANT
