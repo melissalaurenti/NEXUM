@@ -12,4 +12,10 @@ class EventsController < ApplicationController
       Event.none
     end
   end
+
+  def show
+    @event = Event.includes(:interests, :attendances, :host, :city, :chat).find(params[:id])
+    @attendance = current_user&.attendances&.find_by(event: @event)
+    @messages = @event.chat ? @event.chat.messages.includes(:user).order(:created_at) : []
+  end
 end

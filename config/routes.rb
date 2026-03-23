@@ -4,8 +4,11 @@ Rails.application.routes.draw do
 
   get "cities/search", to: "cities#search"
   get "cities", to: "cities#index"
-  resources :events, only: [:index]
+  resources :events, only: [:index, :show]
   resources :attendances, only: [:create, :destroy]
+  resources :chats, only: [] do
+    resources :messages, only: [:create]
+  end
   get "my_events", to: "my_events#index", as: :my_events
   get "profile", to: "profiles#show"
   patch "profile", to: "profiles#update"

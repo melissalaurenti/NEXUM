@@ -1,0 +1,202 @@
+<div class="px-8 md:px-20 lg:px-32 py-12 max-w-5xl mx-auto">
+
+  <!-- Back link -->
+  <div class="mb-8">
+    <%= link_to "&larr; Back to My Events".html_safe, my_events_path,
+        class: "text-sm text-gray-500 hover:text-gray-800 transition font-medium" %>
+  </div>
+
+  <!-- Hero image -->
+  <div class="h-72 md:h-96 rounded-2xl overflow-hidden bg-gray-100 mb-10">
+    <img src="<%= event_image_url(@event) %>"
+         alt="<%= @event.title %>"
+         class="w-full h-full object-cover">
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="flex flex-col lg:flex-row gap-10">
+
+    <!-- Left: main details -->
+    <div class="flex-1 flex flex-col gap-6">
+
+      <!-- Status badge -->
+      <% if @attendance %>
+        <div>
+          <% if @attendance.attending? %>
+            <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-semibold">Going</span>
+          <% else %>
+            <span class="text-xs px-3 py-1 rounded-full font-semibold" style="background: var(--um-sand); color: var(--um-border);">Saved</span>
+          <% end %>
+        </div>
+      <% end %>
+
+      <!-- Title -->
+      <h1 class="text-3xl font-bold text-gray-900 leading-tight"><%= @event.title %></h1>
+
+      <!-- Date & time -->
+      <div class="flex items-center gap-3 text-gray-600">
+        <span class="text-xl">🗓️</span>
+        <div>
+          <p class="font-semibold text-gray-800"><%= @event.starts_at.strftime("%A, %B %-d, %Y") %></p>
+          <p class="text-sm text-gray-500">
+            <%= @event.starts_at.strftime("%H:%M") %>
+            <% if @event.ends_at %> &ndash; <%= @event.ends_at.strftime("%H:%M") %><% end %>
+          </p>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="flex items-start gap-3 text-gray-600">
+        <span class="text-xl mt-0.5">📍</span>
+        <div>
+          <p class="font-semibold text-gray-800"><%= @event.address %></p>
+          <% if @event.city %>
+            <p class="text-sm text-gray-500"><%= @event.city.name %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <% map_query = [@event.address, @event.city&.name].compact.join(", ") %>
+      <div class="rounded-2xl overflow-hidden border border-gray-100 shadow-sm h-48">
+        <iframe
+          width="100%"
+          height="100%"
+          frameborder="0"
+          style="border:0"
+          loading="lazy"
+          allowfullscreen
+          src="https://maps.google.com/maps?q=<%= ERB::Util.url_encode(map_query) %>&output=embed"
+          title="Event location map">
+        </iframe>
+      </div>
+
+      <!-- Description -->
+      <% if @event.description.present? %>
+        <div class="border-t border-gray-100 pt-6">
+          <h2 class="text-base font-semibold text-gray-900 mb-3">About this event</h2>
+          <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-line"><%= @event.description %></p>
+        </div>
+      <% end %>
+
+      <!-- Interest tags -->
+      <% if @event.interests.any? %>
+        <div class="flex flex-wrap gap-2">
+          <% @event.interests.each do |interest| %>
+            <span class="text-xs bg-gray-100 text-gray-600 rounded-full px-3 py-1.5"><%= interest.name %></span>
+          <% end %>
+        </div>
+      <% end %>
+
+    </div>
+
+    <!-- Right: sidebar card -->
+    <div class="lg:w-72 shrink-0 flex flex-col gap-4">
+
+      <!-- Host -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Hosted by</p>
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold text-sm">
+            <%= @event.host.name.split.map(&:first).first(2).join.upcase %>
+          </div>
+          <p class="font-semibold text-gray-800 text-sm"><%= @event.host.name %></p>
+        </div>
+      </div>
+
+      <!-- Attendees -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Spots</p>
+        <p class="text-2xl font-bold text-gray-900"><%= @event.attendances.size %> <span class="text-base font-normal text-gray-400">/ <%= @event.capacity %></span></p>
+        <p class="text-sm text-gray-500 mt-1">people going</p>
+
+        <!-- Capacity bar -->
+        <div class="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <% fill = [@event.attendances.size.to_f / [@event.capacity, 1].max * 100, 100].min.round %>
+          <div class="h-full rounded-full" style="width: <%= fill %>%; background: var(--um-primary);"></div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <% if user_signed_in? %>
+        <% if @attendance&.attending? %>
+          <button disabled class="w-full bg-green-100 text-green-700 rounded-full py-3 text-sm font-semibold cursor-default">
+            You're going!
+          </button>
+          <%= button_to "I'm not going", attendance_path(@attendance),
+              method: :delete,
+              data: { turbo_confirm: "Remove your RSVP for this event?" },
+              class: "w-full border rounded-full py-3 text-sm font-semibold transition text-center", style: "border-color: #D1A7A0; color: #D1A7A0;" %>
+        <% elsif @attendance&.saved? %>
+          <%= form_with url: attendances_path, method: :post, local: false do |f| %>
+            <%= f.hidden_field :event_id, value: @event.id %>
+            <%= f.hidden_field :status, value: "attending" %>
+            <%= f.submit "Join Now", class: "w-full bg-black text-white rounded-full py-3 text-sm font-semibold hover:bg-gray-800 transition cursor-pointer" %>
+          <% end %>
+          <%= button_to "Remove Save", attendance_path(@attendance),
+              method: :delete,
+              data: { turbo_confirm: "Remove this event from your saved list?" },
+              class: "w-full border border-gray-200 text-gray-500 rounded-full py-3 text-sm font-semibold hover:bg-gray-50 transition text-center" %>
+        <% else %>
+          <%= form_with url: attendances_path, method: :post, local: false do |f| %>
+            <%= f.hidden_field :event_id, value: @event.id %>
+            <%= f.hidden_field :status, value: "attending" %>
+            <%= f.submit "Join Now", class: "w-full bg-black text-white rounded-full py-3 text-sm font-semibold hover:bg-gray-800 transition cursor-pointer" %>
+          <% end %>
+          <%= form_with url: attendances_path, method: :post, local: false do |f| %>
+            <%= f.hidden_field :event_id, value: @event.id %>
+            <%= f.hidden_field :status, value: "saved" %>
+            <%= f.submit "Save for Later", class: "w-full border border-gray-300 text-gray-700 rounded-full py-3 text-sm font-semibold hover:bg-gray-50 transition cursor-pointer" %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <%= link_to "Join Now", new_user_session_path,
+            class: "block w-full bg-black text-white rounded-full py-3 text-sm font-semibold hover:bg-gray-800 transition text-center" %>
+        <%= link_to "Save for Later", new_user_session_path,
+            class: "block w-full border border-gray-300 text-gray-700 rounded-full py-3 text-sm font-semibold hover:bg-gray-50 transition text-center" %>
+      <% end %>
+
+    </div>
+    </div>
+
+  <% if @attendance&.attending? && @event.chat %>
+    <!-- Event Chat -->
+    <div class="mt-12 border-t border-gray-100 pt-10"
+         data-controller="chat"
+         data-chat-chat-id-value="<%= @event.chat.id %>"
+         data-chat-messages-url-value="<%= chat_messages_path(@event.chat) %>">
+
+      <div class="flex items-center gap-2 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900">Event Chat</h2>
+        <span class="text-xs text-gray-400 bg-gray-100 rounded-full px-2.5 py-1">Only visible to attendees</span>
+      </div>
+
+      <!-- Messages list -->
+      <div class="bg-gray-50 rounded-2xl p-5 h-80 overflow-y-auto mb-4" data-chat-target="messages">
+        <% if @messages.empty? %>
+          <p class="text-sm text-gray-400 text-center mt-8" data-empty="true">No messages yet. Say hi!</p>
+        <% else %>
+          <% @messages.each do |message| %>
+            <%= render "messages/message", message: message %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- Message input -->
+      <%= form_with url: chat_messages_path(@event.chat), method: :post,
+            data: { chat_target: "form", action: "submit->chat#submit" } do |f| %>
+        <div class="flex gap-2">
+          <%= f.text_field :body,
+                placeholder: "Message the group...",
+                autocomplete: "off",
+                class: "flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200",
+                data: { chat_target: "input" } %>
+          <%= f.submit "Send",
+                class: "rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition cursor-pointer",
+                style: "background: var(--um-primary);" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+</div>

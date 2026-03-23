@@ -19,9 +19,8 @@
       <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
         <%= attendance.event.starts_at.strftime("%a, %b %-d · %H:%M") %>
       </p>
-      <h3 class="mt-1 text-base font-semibold text-gray-900 leading-snug">
-        <%= attendance.event.title %>
-      </h3>
+      <%= link_to attendance.event.title, event_path(attendance.event),
+          class: "mt-1 text-base font-semibold text-gray-900 leading-snug hover:underline block" %>
     </div>
 
     <p class="text-sm text-gray-500 flex items-start gap-1">
